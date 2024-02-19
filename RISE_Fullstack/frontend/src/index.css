@@ -1,0 +1,52 @@
+@import "assets/icons/fonts/remixicon.css";
+@import "../node_modules/react-toastify/dist/ReactToastify.css";
+/* @import "assets/scss/pages/_authentication.scss"; */
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.bg-overlay {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  top: 0;
+  opacity: 0.7;
+  background-color: #000;
+}
+
+.auth-one-bg .bg-overlay {
+  background: linear-gradient(to right, #2265df, #3d78e3);
+  opacity: 0.9;
+}
+
+.auth-page-wrapper .auth-page-content {
+  /* padding-bottom: 60px; */
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.footer {
+  padding: 20px calc(1.5rem * 0.5);
+  color: var(--vz-footer-color);
+  height: 60px;
+  background-color: var(--vz-footer-bg);
+}
+
+.auth-page-wrapper .footer {
+  background-color: transparent;
+}

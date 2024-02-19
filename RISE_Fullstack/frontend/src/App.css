@@ -1,0 +1,136 @@
+.invalid-feedback {
+  line-height: 1;
+  margin-top: .15rem;
+}
+
+.form-floating>.form-control-plaintext:focus,
+.form-floating>.form-control-plaintext:not(:placeholder-shown),
+.form-floating>.form-control:focus,
+.form-floating>.form-control:not(:placeholder-shown) {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.form-floating>.form-control-plaintext~label,
+.form-floating>.form-control:focus~label,
+.form-floating>.form-control:not(:placeholder-shown)~label,
+.form-floating>.form-select~label {
+  color: rgba(var(--bs-body-color-rgb), .65);
+  transform: scale(.85) translateY(-2rem) translateX(.5rem);
+}
+
+.app-menu {
+  width: 280px;
+}
+
+.navbar-header {
+  margin-left: -.75rem;
+  margin-right: -.75rem;
+}
+
+.main-content {
+  max-width: calc(100vw - 21rem);
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+}
+
+td.gridjs-td {
+  font-size: .875rem;
+}
+
+th.gridjs-th {
+  font-size: .875rem;
+}
+
+tr.gridjs-tr td.gridjs-td,
+tr.gridjs-tr th.gridjs-th {
+  padding: .5rem .75rem;
+}
+
+.fw-400 {
+  font-weight: 400;
+}
+
+.fw-600 {
+  font-weight: 600;
+}
+
+.fw-700 {
+  font-weight: 700;
+}
+
+.fw-800 {
+  font-weight: 800;
+}
+
+.mxw-100 {
+  max-width: 100px;
+}
+
+.mxw-150 {
+  max-width: 150px;
+}
+
+.mxw-200 {
+  max-width: 200px;
+}
+
+.mxw-250 {
+  max-width: 250px;
+}
+
+.mxw-300 {
+  max-width: 300px;
+}
+
+.mxw-350 {
+  max-width: 350px;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.text-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text-3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.image-link:hover {
+  text-decoration: underline;
+}
+
+.image_view_height {
+  max-height: 20rem;
+}
+
+.chat-bot-container {
+  position: fixed;
+  bottom: 3rem;
+  right: 3rem;
+  z-index: 1111;
+}
+.chat-bot-container:not(.show) .chat-bot {
+  display: none;
+}
+.chat-bot-container.show .chat-bot-handler {
+  display: none;
+}
+.form-floating.mb-0{
+  margin-bottom: 0 !important;
+}

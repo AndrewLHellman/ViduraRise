@@ -1,12 +1,20 @@
-const { find_raw } = require("../../database_services/mongo_crud");
+const { find_all } = require("../../database_services/mongo_crud");
 
 const getAllProjects = async (req, res) => {
   try {
+
+    let {user_email} = req.body;
+
     let query_params = {
       modelName: "projectData",
+      where: {
+        usersAssigned: {
+          $elemMatch: { user_email: user_email }
+        }
+      }
     };
 
-    all_projects = await find_raw(query_params);
+    all_projects = await find_all(query_params);
 
     project_data = [];
     for (let i = 0; i < all_projects.length; i++) {

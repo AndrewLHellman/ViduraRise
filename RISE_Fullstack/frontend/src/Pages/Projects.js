@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect,useState } from 'react'
 import { Grid, _ } from 'gridjs-react';
 import { html } from 'gridjs'
 import { Badge, Button, Col, FormFeedback, Form, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Row, Spinner } from 'reactstrap'
@@ -9,6 +9,7 @@ import axios from 'axios';
 import PropTypes from "prop-types"
 import { ToastContainer, toast } from 'react-toastify';
 import RbAlert from 'react-bootstrap/Alert';
+import { verifyToken } from '../Common/AuthToken';
 
 function LinkCell(text) {
   return (
@@ -47,6 +48,27 @@ const Projects = (props) => {
   const [imageAnalyzed, setImageAnalyzed] = useState("");
   const [storageAssign, setStorageAssign] = useState("");
   const [description, setDescription] = useState("");
+
+  const [status, setStatus] = useState();
+  const storedToken = localStorage.getItem('auth_token');
+  const [userData, setUserData] = useState([]);
+
+  useEffect(() => {
+      async function fetchData() {
+          try {
+              let user = {
+                  token: storedToken
+              }
+              let token_res = await verifyToken(user);
+              setUserData([token_res?.data]);
+              setStatus(token_res.status);
+          } catch (error) {
+              console.error('Error fetching data:', error);
+          }
+      }
+      fetchData()
+  }, [status, storedToken]);
+
 
 // false for add, true for update
   const toggle = (props, update = false) => {
@@ -234,6 +256,11 @@ const Projects = (props) => {
           columns={columns}
           server={{
             url: 'http://localhost:3200/allProjects',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({user_email: userData[0]?.email ? userData[0]?.email : ""}),
             then: data => data.data.map((project) => [
               project.uniqueId,
               project.projectName,

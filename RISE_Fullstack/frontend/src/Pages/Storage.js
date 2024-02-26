@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Grid, _ } from 'gridjs-react'
 import { Button, Col, FormFeedback, Form, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Row, Spinner } from 'reactstrap'
 import "gridjs/dist/theme/mermaid.css"
 import * as Yup from "yup";
 import { useFormik } from 'formik';
 import axios from 'axios';
+import { verifyToken } from '../Common/AuthToken';
 
 const sleep = ms =>
   new Promise(resolve => setTimeout(resolve, ms));
@@ -25,6 +26,26 @@ const Storage = (props) => {
   const [type, setType] = useState("");
   const [usage, setUsage] = useState(""); 
   const [imageCount, setImageCount] = useState("");
+
+  const [status, setStatus] = useState();
+  const storedToken = localStorage.getItem('auth_token');
+  const [userData, setUserData] = useState([]);
+
+  useEffect(() => {
+      async function fetchData() {
+          try {
+              let user = {
+                  token: storedToken
+              }
+              let token_res = await verifyToken(user);
+              setUserData([token_res?.data]);
+              setStatus(token_res.status);
+          } catch (error) {
+              console.error('Error fetching data:', error);
+          }
+      }
+      fetchData()
+  }, [status, storedToken]);
 
   const columns = [
     {
@@ -119,6 +140,11 @@ const Storage = (props) => {
           columns={columns}
           server={{
             url: 'http://localhost:3200/getStorage',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({user_email: userData[0]?.email ? userData[0]?.email : ""}),
             then: data => data.data.map(storage => [
               storage.bucketName,
               storage.type,

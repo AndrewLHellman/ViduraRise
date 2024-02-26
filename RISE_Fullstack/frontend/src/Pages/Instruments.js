@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Grid, _ } from "gridjs-react"
 import { Button, Col, Form, FormGroup, Input, Label, Modal, ModalBody, Spinner, ModalHeader, Row, FormFeedback } from "reactstrap"
 import PropTypes from "prop-types"
@@ -8,6 +8,7 @@ import { useFormik } from "formik";
 import axios from 'axios'
 import { ToastContainer, toast } from 'react-toastify'
 import RbAlert from 'react-bootstrap/Alert';
+import { verifyToken } from '../Common/AuthToken';
 
 const sleep = ms =>
   new Promise(resolve => setTimeout(resolve, ms));
@@ -31,6 +32,26 @@ const Instruments = (props) => {
   const [description, setDescription] = useState("");
   const [id, seId] = useState("");
   const [show, setShow] = useState(false);
+
+  const [status, setStatus] = useState();
+  const storedToken = localStorage.getItem('auth_token');
+  const [userData, setUserData] = useState([]);
+
+  useEffect(() => {
+      async function fetchData() {
+          try {
+              let user = {
+                  token: storedToken
+              }
+              let token_res = await verifyToken(user);
+              setUserData([token_res?.data]);
+              setStatus(token_res.status);
+          } catch (error) {
+              console.error('Error fetching data:', error);
+          }
+      }
+      fetchData()
+  }, [status, storedToken]);
 
   const toggle = (props) => {
     setModal(!modal);
@@ -167,6 +188,11 @@ const Instruments = (props) => {
           columns={columns}
           server={{
             url: 'http://localhost:3200/getinstruments',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({user_email: userData[0]?.email ? userData[0]?.email : ""}),
             then: data => data.data.map(instrument => [
               instrument.uniqueId,
               instrument.name,

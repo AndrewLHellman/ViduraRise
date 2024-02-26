@@ -39,6 +39,11 @@ const project_data_schema = new mongoose.Schema(
         st_name: String,
       },
     ],
+    usersAssigned: [
+      {
+        user_email: String,
+      },
+    ],
   },
   {
     timestamps: true,

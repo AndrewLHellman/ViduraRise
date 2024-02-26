@@ -33,6 +33,11 @@ const instrument_data_schema = new mongoose.Schema(
     gateway: {
       type: String,
     },
+    usersAssigned: [
+      {
+        user_email: String,
+      },
+    ],
   },
   {
     timestamps: true,

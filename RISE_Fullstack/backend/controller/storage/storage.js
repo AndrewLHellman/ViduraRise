@@ -3,11 +3,19 @@ const { find_all } = require("../../database_services/mongo_crud");
 
 const getStorage = async (req, res) => {
   try {
-    
-    param = {
+
+    let {user_email} = req.body;
+
+    let query_params = {
       modelName: "storage_data",
+      where: {
+        usersAssigned: {
+          $elemMatch: { user_email: user_email }
+        }
+      }
     };
-    in_data = await find_all(param);
+    
+    let in_data = await find_all(query_params);
 
     //console.log(in_data);
     return res.json({

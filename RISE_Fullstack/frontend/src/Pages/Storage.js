@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Grid, _ } from 'gridjs-react'
-import { Button, Col, FormFeedback, Form, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Row, Spinner } from 'reactstrap'
+import { Badge, Button, Col, FormFeedback, Form, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Row, Spinner } from 'reactstrap'
 import "gridjs/dist/theme/mermaid.css"
 import * as Yup from "yup";
 import { useFormik } from 'formik';
@@ -60,6 +60,20 @@ const Storage = (props) => {
     "Usage",
     {
       name: "Image Count",
+    },
+    {
+      name: "Users Assigned",
+      formatter: (cell, row) => {
+        return _(
+          <div className='d-flex flex-wrap mxw-300 gap-1'>
+            {cell.map((item) =>
+              <>
+                <Badge>{item.user_email}</Badge>
+              </>
+            )}
+          </div>
+        )
+      }
     }
   ]
 
@@ -76,15 +90,18 @@ const Storage = (props) => {
     setType(data ? data[1].data : "");
   };
 
-  const fetchData = async (req_data) => {
-    console.log(req_data);
+  const fetchData = async ({ bucketName, type }) => {
     let config = {
       method: 'post',
       url: 'http://localhost:3200/addStorage',
       headers: {
         'Content-Type': 'application/json',
       },
-      data: JSON.stringify(req_data)
+      data: {
+        bucketName,
+        type,
+        user_email: userData[0]?.email ? userData[0]?.email : ""
+      }
     };
     await axios.request(config)
       .then(async (response) => {
@@ -149,7 +166,8 @@ const Storage = (props) => {
               storage.bucketName,
               storage.type,
               storage.usage,
-              storage.imagecount
+              storage.imagecount,
+              storage.usersAssigned
             ]),
             handle: (res) => {
               if (res.status === 404) return { data: [] };

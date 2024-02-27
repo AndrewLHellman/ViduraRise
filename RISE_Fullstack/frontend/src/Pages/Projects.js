@@ -129,6 +129,20 @@ const Projects = (props) => {
       }
     },
     {
+      name: "Users Assigned",
+      formatter: (cell, row) => {
+        return _(
+          <div className='d-flex flex-wrap mxw-300 gap-1'>
+            {cell.map((item) =>
+              <>
+                <Badge>{item.user_email}</Badge>
+              </>
+            )}
+          </div>
+        )
+      }
+    },
+    {
       name: "Description",
       formatter: (cell, row) => {
         return _(
@@ -171,7 +185,8 @@ const Projects = (props) => {
         uniqueId,
         type,
         projectName,
-        description
+        description,
+        user_email: userData[0]?.email ? userData[0]?.email : ""
       }
     };
     await axios.request(config)
@@ -268,6 +283,7 @@ const Projects = (props) => {
               project.instruments,
               project.imageAnalyzed,
               project.storageAssign,
+              project.usersAssigned,
               project.description
             ]),
             handle: (res) => {

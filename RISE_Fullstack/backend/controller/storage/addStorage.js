@@ -4,7 +4,8 @@ const addStorage = async (req, res) => {
     try {
         let {
             bucketName,
-            type
+            type,
+            user_email
         } = req.body;
 
         console.log("requested data-->>", req.body);
@@ -14,6 +15,7 @@ const addStorage = async (req, res) => {
             type: type,
             usage: "0MB",
             imagecount: 0,
+            usersAssigned:[{ user_email: user_email }]
         };
 
         let query_params = {

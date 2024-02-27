@@ -26,6 +26,7 @@ const getAllProjects = async (req, res) => {
       temp_obj["instruments"] = all_projects[i]["instruments"];
       temp_obj["imageAnalyzed"] = all_projects[i]["imageAnalyzed"];
       temp_obj["storageAssign"] = all_projects[i]["storageAssign"];
+      temp_obj["usersAssigned"] = all_projects[i]["usersAssigned"];
       project_data.push(temp_obj);
     }
 

@@ -20,7 +20,8 @@ const addProject = async (req, res) => {
         let {
             type,
             description,
-            projectName
+            projectName,
+            user_email
         } = req.body;
 
         console.log("requested data-->>", req.body);
@@ -32,8 +33,9 @@ const addProject = async (req, res) => {
             type: type,
             description: description,
             projectName: projectName,
-            instruments: { in_name: "EMC SEM-1"},
-            storageAssign: { st_name: "new-rise-test-bucket" }
+            instruments: { in_name: "EMC SEM-7" },
+            storageAssign: { st_name: "new-rise-test-bucket" },
+            usersAssigned:[{ user_email: user_email }]
         };
 
         let query_params = {

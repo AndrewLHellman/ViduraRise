@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Grid, _ } from "gridjs-react"
-import { Button, Col, Form, FormGroup, Input, Label, Modal, ModalBody, Spinner, ModalHeader, Row, FormFeedback } from "reactstrap"
+import { Badge, Button, Col, Form, FormGroup, Input, Label, Modal, ModalBody, Spinner, ModalHeader, Row, FormFeedback } from "reactstrap"
 import PropTypes from "prop-types"
 import "gridjs/dist/theme/mermaid.css"
 import * as Yup from "yup";
@@ -81,6 +81,20 @@ const Instruments = (props) => {
     "Name",
     "Type",
     "Status",
+    {
+      name: "Users Assigned",
+      formatter: (cell, row) => {
+        return _(
+          <div className='d-flex flex-wrap mxw-300 gap-1'>
+            {cell.map((item) =>
+              <>
+                <Badge>{item.user_email}</Badge>
+              </>
+            )}
+          </div>
+        )
+      }
+    },
     {
       name: "Description",
       formatter: (cell, row) => {
@@ -198,8 +212,9 @@ const Instruments = (props) => {
               instrument.name,
               instrument.type,
               instrument.status,
+              instrument.usersAssigned,
               instrument.description,
-              instrument._id
+              instrument._id,
             ]),
             handle: (res) => {
               if (res.status === 404) return { data: [] };

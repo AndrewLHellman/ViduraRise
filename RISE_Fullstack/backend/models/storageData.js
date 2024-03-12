@@ -16,7 +16,12 @@ const storage_data_schema = new mongoose.Schema(
     },
     imagecount: {
       type: Number
-    }
+    },
+    usersAssigned: [
+      {
+        user_email: String,
+      },
+    ]
   },
   {
     timestamps: true,

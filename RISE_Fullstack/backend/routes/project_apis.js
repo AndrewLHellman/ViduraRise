@@ -8,7 +8,7 @@ const { addProject } = require('../controller/projects/addProject')
 const router = require("express").Router();
 
 
-router.get('/allProjects', getAllProjects);
+router.post('/allProjects', getAllProjects);
 router.get('/projectDetails',projectDetails);
 router.get('/image_data',image_data);
 router.post('/getAllImages', getAllProjectimages);

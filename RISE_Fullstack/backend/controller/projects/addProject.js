@@ -20,7 +20,10 @@ const addProject = async (req, res) => {
         let {
             type,
             description,
-            projectName
+            projectName,
+            storageAssign,
+            instruments,
+            user_email
         } = req.body;
 
         console.log("requested data-->>", req.body);
@@ -32,8 +35,10 @@ const addProject = async (req, res) => {
             type: type,
             description: description,
             projectName: projectName,
-            instruments: { in_name: "EMC SEM-1"},
-            storageAssign: { st_name: "new-rise-test-bucket" }
+            instruments: { in_name: "EMC SEM-7" },
+            storageAssign: storageAssign.map((storage) => ({ "st_name": storage})),
+            instruments: instruments,
+            usersAssigned:[{ user_email: user_email }]
         };
 
         let query_params = {
@@ -52,14 +57,14 @@ const addProject = async (req, res) => {
             return res.json({
                 status: 1,
                 msgType: "success",
-                msg: "Storage Added!",
+                msg: "Project Added!",
                 data: data,
             });
         } else {
             return res.json({
                 status: 2,
                 msgType: "success",
-                msg: "Storage already exists!",
+                msg: "Project already exists!",
             });
         }
 

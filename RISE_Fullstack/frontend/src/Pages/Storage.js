@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Grid, _ } from 'gridjs-react'
-import { Button, Col, FormFeedback, Form, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Row, Spinner } from 'reactstrap'
+import { Badge, Button, Col, FormFeedback, Form, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Row, Spinner } from 'reactstrap'
 import "gridjs/dist/theme/mermaid.css"
 import * as Yup from "yup";
 import { useFormik } from 'formik';
 import axios from 'axios';
+import { verifyToken } from '../Common/AuthToken';
 
 const sleep = ms =>
   new Promise(resolve => setTimeout(resolve, ms));
@@ -26,6 +27,26 @@ const Storage = (props) => {
   const [usage, setUsage] = useState(""); 
   const [imageCount, setImageCount] = useState("");
 
+  const [status, setStatus] = useState();
+  const storedToken = localStorage.getItem('auth_token');
+  const [userData, setUserData] = useState([]);
+
+  useEffect(() => {
+      async function fetchData() {
+          try {
+              let user = {
+                  token: storedToken
+              }
+              let token_res = await verifyToken(user);
+              setUserData([token_res?.data]);
+              setStatus(token_res.status);
+          } catch (error) {
+              console.error('Error fetching data:', error);
+          }
+      }
+      fetchData()
+  }, [status, storedToken]);
+
   const columns = [
     {
       name: "Storage Name",
@@ -39,6 +60,20 @@ const Storage = (props) => {
     "Usage",
     {
       name: "Image Count",
+    },
+    {
+      name: "Users Assigned",
+      formatter: (cell, row) => {
+        return _(
+          <div className='d-flex flex-wrap mxw-300 gap-1'>
+            {cell.map((item) =>
+              <>
+                <Badge>{item.user_email}</Badge>
+              </>
+            )}
+          </div>
+        )
+      }
     }
   ]
 
@@ -55,15 +90,18 @@ const Storage = (props) => {
     setType(data ? data[1].data : "");
   };
 
-  const fetchData = async (req_data) => {
-    console.log(req_data);
+  const fetchData = async ({ bucketName, type }) => {
     let config = {
       method: 'post',
       url: 'http://localhost:3200/addStorage',
       headers: {
         'Content-Type': 'application/json',
       },
-      data: JSON.stringify(req_data)
+      data: {
+        bucketName,
+        type,
+        user_email: userData[0]?.email ? userData[0]?.email : ""
+      }
     };
     await axios.request(config)
       .then(async (response) => {
@@ -119,11 +157,17 @@ const Storage = (props) => {
           columns={columns}
           server={{
             url: 'http://localhost:3200/getStorage',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({user_email: userData[0]?.email ? userData[0]?.email : ""}),
             then: data => data.data.map(storage => [
               storage.bucketName,
               storage.type,
               storage.usage,
-              storage.imagecount
+              storage.imagecount,
+              storage.usersAssigned
             ]),
             handle: (res) => {
               if (res.status === 404) return { data: [] };

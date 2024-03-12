@@ -24,6 +24,7 @@ const project_data_schema = new mongoose.Schema(
     instruments: [
       {
         in_name: String,
+        in_uniqueId: String,
       },
     ],
     imageAnalyzed: {
@@ -37,6 +38,11 @@ const project_data_schema = new mongoose.Schema(
     storageAssign: [
       {
         st_name: String,
+      },
+    ],
+    usersAssigned: [
+      {
+        user_email: String,
       },
     ],
   },

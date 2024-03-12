@@ -1,10 +1,11 @@
-const { insertquery, find_one } = require("../../database_services/mongo_crud");
+const { insertquery, find_one, update } = require("../../database_services/mongo_crud");
 
 const addStorage = async (req, res) => {
     try {
         let {
             bucketName,
-            type
+            type,
+            user_email
         } = req.body;
 
         console.log("requested data-->>", req.body);
@@ -14,6 +15,7 @@ const addStorage = async (req, res) => {
             type: type,
             usage: "0MB",
             imagecount: 0,
+            usersAssigned:[{ user_email: user_email }]
         };
 
         let query_params = {
@@ -35,11 +37,28 @@ const addStorage = async (req, res) => {
                 msg: "Storage Added!",
                 data: data,
             });
-        } else {
+        } else if (check_storage.usersAssigned.some(user => user.user_email === user_email)) {
+            console.log("Storage already exists and user is already assigned");
             return res.json({
                 status: 2,
                 msgType: "success",
-                msg: "Storage already exists!",
+                msg: "Storage already exists and user is already assigned",
+            })
+        }
+        else {
+            check_storage.usersAssigned.push({ user_email: user_email });
+            console.log("Adding user to storage");
+            query_params = {
+                modelName: "storage_data",
+                where: { bucketName: bucketName },
+                updateData: { usersAssigned: check_storage.usersAssigned },
+                queryType: "updateOne"
+            };
+            await update(query_params);
+            return res.json({
+                status: 3,
+                msgType: "success",
+                msg: "User added to existing storage!",
             });
         }
     } catch (error) {

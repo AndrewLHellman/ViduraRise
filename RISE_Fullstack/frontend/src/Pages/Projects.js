@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect,useState } from 'react'
 import { Grid, _ } from 'gridjs-react';
 import { html } from 'gridjs'
 import { Badge, Button, Col, FormFeedback, Form, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Row, Spinner } from 'reactstrap'
@@ -9,6 +9,8 @@ import axios from 'axios';
 import PropTypes from "prop-types"
 import { ToastContainer, toast } from 'react-toastify';
 import RbAlert from 'react-bootstrap/Alert';
+import { verifyToken } from '../Common/AuthToken';
+import Select from 'react-select';
 
 function LinkCell(text) {
   return (
@@ -48,6 +50,115 @@ const Projects = (props) => {
   const [storageAssign, setStorageAssign] = useState("");
   const [description, setDescription] = useState("");
 
+  const [status, setStatus] = useState();
+  const storedToken = localStorage.getItem('auth_token');
+  const [userData, setUserData] = useState([]);
+
+  const [storagesAvailable, setStoragesAvailable] = useState();
+  const [instrumentsAvailable, setInstrumentsAvailable] = useState();
+
+  const storageSchema = Yup.object({
+    label: Yup.string().required(),
+    value: Yup.string().required()
+  });
+
+  const instrumentSchema = Yup.object({
+    label: Yup.string().required(),
+    value: Yup.string().required()
+  });
+
+  useEffect(() => {
+      async function fetchData() {
+          try {
+              let user = {
+                  token: storedToken
+              }
+              let token_res = await verifyToken(user);
+              setUserData([token_res?.data]);
+              setStatus(token_res.status);
+          } catch (error) {
+              console.error('Error fetching data:', error);
+          }
+      }
+      fetchData()
+  }, [status, storedToken]);
+
+  const getStorages = async () => {
+    let config = {
+      method: 'post',
+      url: 'http://localhost:3200/getStorage',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: {
+        user_email: userData[0]?.email ? userData[0]?.email : ""
+      }
+    };
+    await axios.request(config)
+      .then(async (response) => {
+        debugger;
+        const { status, msgType, msg, data } = response.data;
+        switch (status) {
+          case 1:
+            setSuccess(msgType)
+            setStoragesAvailable(data.map(item => {
+              return {
+                  value: item.bucketName,
+                  label: item.bucketName
+              };
+          }))
+            break;
+          case 2:
+            setErrorMsg(msg)
+            break;
+
+          default:
+            break;
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const getInstruments = async () => {
+    let config = {
+      method: 'post',
+      url: 'http://localhost:3200/getinstruments',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: {
+        user_email: userData[0]?.email ? userData[0]?.email : ""
+      }
+    };
+    await axios.request(config)
+      .then(async (response) => {
+        debugger;
+        const { status, msgType, msg, data } = response.data;
+        switch (status) {
+          case 1:
+            setSuccess(msgType)
+            setInstrumentsAvailable(data.map(item => {
+              return {
+                  value: item.uniqueId,
+                  label: item.name
+              };
+          }))
+            break;
+          case 2:
+            setErrorMsg(msg)
+            break;
+
+          default:
+            break;
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
 // false for add, true for update
   const toggle = (props, update = false) => {
     debugger
@@ -59,13 +170,26 @@ const Projects = (props) => {
       return null;
     }
     const data = (update ? props._cells : false);
+    console.log(data);
     setUniqueId(data ? data[0].data : "");
     setProjectName(data ? data[1].data : "");
     setType(data ? data[2].data : "");
-    setInstruments(data ? data[3].data : "");
+    setInstruments(data ? data[3].data.map(item => {
+      return {
+        value: item.in_uniqueId,
+        label: item.in_name
+      };
+    }) : "");
     setImageAnalyzed(data ? data[4].data : "");
-    setStorageAssign(data ? data[5].data : "");
-    setDescription(data ? data[6].data : "");
+    setStorageAssign(data ? data[5].data.map(item => {
+      return {
+          value: item.st_name,
+          label: item.st_name
+      };
+  }) : []);
+    setDescription(data ? data[7].data : "");
+    getStorages();
+    getInstruments();
   };
 
   const columns = [
@@ -107,6 +231,20 @@ const Projects = (props) => {
       }
     },
     {
+      name: "Users Assigned",
+      formatter: (cell, row) => {
+        return _(
+          <div className='d-flex flex-wrap mxw-300 gap-1'>
+            {cell.map((item) =>
+              <>
+                <Badge>{item.user_email}</Badge>
+              </>
+            )}
+          </div>
+        )
+      }
+    },
+    {
       name: "Description",
       formatter: (cell, row) => {
         return _(
@@ -137,7 +275,9 @@ const Projects = (props) => {
     uniqueId,
     type,
     projectName,
-    description
+    description,
+    storageAssign,
+    instruments
   }) => {
     let config = {
       method: 'post',
@@ -149,7 +289,13 @@ const Projects = (props) => {
         uniqueId,
         type,
         projectName,
-        description
+        description,
+        storageAssign: storageAssign.map((storage) => storage.value),
+        instruments: instruments.map((instrument) => ({
+          "in_name": instrument.label,
+          "in_unqiueId": instrument.value
+        })),
+        user_email: userData[0]?.email ? userData[0]?.email : ""
       }
     };
     await axios.request(config)
@@ -179,21 +325,29 @@ const Projects = (props) => {
       uniqueId,
       type,
       projectName,
-      description
+      description,
+      storageAssign,
+      instruments
     } : {
       type,
       projectName,
-      description
+      description,
+      storageAssign,
+      instruments
     },
     validationSchema: Yup.object( update ? {
       uniqueId: Yup.string().required("Unique id is missing."),
       type: Yup.string().required("Type field is blank."),
       projectName: Yup.string().required("Project name field is blank."),
-      description: Yup.string().required("Description is missing. Please provide")
+      description: Yup.string().required("Description is missing. Please provide"),
+      storageAssign: Yup.array().of(storageSchema).required("No storages are selected."),
+      instruments: Yup.array().of(instrumentSchema).required("No instruments are selected.")
     } : {
       type: Yup.string().required("Type field is blank."),
       projectName: Yup.string().required("Project name field is blank."),
-      description: Yup.string().required("Description is missing. Please provide")
+      description: Yup.string().required("Description is missing. Please provide"),
+      storageAssign: Yup.array().of(storageSchema).required("No storages are selected."),
+      instruments: Yup.array().of(instrumentSchema).required("No instruments are selected.")
     }),
     onSubmit: async (values) => {
       debugger;
@@ -212,12 +366,12 @@ const Projects = (props) => {
   return (
     <div>
       <h5 className='fw-bold mb-3'>Projects</h5>
-      {success && success ? (
+      {/*success && success ? (
         <>
           {toast.success(<small>{success}</small>, { position: "top-right", hideProgressBar: false, progress: undefined, toastId: "" })}
           <ToastContainer autoClose={3000} limit={1} draggable={true} pauseOnHover={true} />
         </>
-      ) : null}
+      ) : null*/}
       {errorMsg && errorMsg ? (
         <Row className='justify-content-center'>
           <Col md={8} lg={6} xl={6}>
@@ -234,6 +388,11 @@ const Projects = (props) => {
           columns={columns}
           server={{
             url: 'http://localhost:3200/allProjects',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({user_email: userData[0]?.email ? userData[0]?.email : ""}),
             then: data => data.data.map((project) => [
               project.uniqueId,
               project.projectName,
@@ -241,6 +400,7 @@ const Projects = (props) => {
               project.instruments,
               project.imageAnalyzed,
               project.storageAssign,
+              project.usersAssigned,
               project.description
             ]),
             handle: (res) => {
@@ -276,6 +436,7 @@ const Projects = (props) => {
           <Form
             onSubmit={(e) => {
               e.preventDefault();
+              debugger;
               validation.handleSubmit();
               return false
             }}
@@ -321,7 +482,7 @@ const Projects = (props) => {
                   </FormGroup>
                 </div>
               </Col>
-              <Col sm={6}>
+              {/*<Col sm={6}>
                 <div className='mb-3'>
                   <FormGroup floating>
                     <Input
@@ -337,7 +498,7 @@ const Projects = (props) => {
                     </Label>
                   </FormGroup>
                 </div>
-              </Col>
+              </Col>*/}
               <Col sm={6}>
                 <div className='mb-3'>
                   <FormGroup floating>
@@ -355,7 +516,7 @@ const Projects = (props) => {
                   </FormGroup>
                 </div>
               </Col>
-              <Col sm={6}>
+              {/*<Col sm={6}>
                 <div className='mb-3'>
                   <FormGroup floating>
                     <Input
@@ -371,9 +532,9 @@ const Projects = (props) => {
                     </Label>
                   </FormGroup>
                 </div>
-              </Col>
+              </Col>*/}
             </Row>
-            <p className='pt-2 mb-2'><em>You can upate -</em></p>
+            <p className='pt-2 mb-2'><em>You can update -</em></p>
             <Row>
               <Col sm={12}>
                 <div className='mb-3'>
@@ -413,6 +574,45 @@ const Projects = (props) => {
                     {validation.touched.description && validation.errors.description ? (
                       <FormFeedback className='d-block' type="invalid"><small>{validation.errors.description}</small></FormFeedback>
                     ) : null}
+                  </FormGroup>
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <Col sm={12}>
+                <div className='mb-3'>
+                  <FormGroup floating>
+                    <Select
+                      id="storageAssign"
+                      name="storageAssign"
+                      placeholder="Storages"
+                      options={storagesAvailable}
+                      isMulti
+                      value={storageAssign}
+                      required
+                      onChange={(e) => setStorageAssign(e)}
+                      ></Select>
+                  </FormGroup>
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <Col sm={12}>
+                <div className='mb-3'>
+                  <FormGroup floating>
+                    <Select
+                      id="projectInstruments"
+                      name="instruments"
+                      placeholder="Instruments"
+                      options={instrumentsAvailable}
+                      isMulti
+                      value={instruments}
+                      required
+                      onChange={function (e) {
+                        setInstruments(e);
+                        console.log(e);
+                      }}
+                      ></Select>
                   </FormGroup>
                 </div>
               </Col>

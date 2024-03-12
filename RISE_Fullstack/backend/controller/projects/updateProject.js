@@ -2,7 +2,7 @@ const { update } = require("../../database_services/mongo_crud");
 
 const updateProject = async (req, res) => {
   try {
-    let { uniqueId, type, description, projectName } = req.body;
+    let { uniqueId, type, description, projectName, storageAssign, instruments } = req.body;
 
     let query_params = {
       modelName: "projectData",
@@ -11,6 +11,8 @@ const updateProject = async (req, res) => {
         type: type,
         description: description,
         projectName: projectName,
+        storageAssign: storageAssign.map((storage) => ({ "st_name": storage})),
+        instruments: instruments,
       },
       query_type: "updateOne",
     };

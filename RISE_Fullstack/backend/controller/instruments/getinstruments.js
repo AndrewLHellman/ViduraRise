@@ -14,7 +14,7 @@ const getinstruments = async (req, res) => {
       }
     };
     let data = await find_all(query_params);
-    console.log("----->> ", data);
+    //console.log("----->> ", data);
 
     return res.json({
       status: 1,

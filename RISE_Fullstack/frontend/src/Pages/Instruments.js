@@ -81,6 +81,7 @@ const Instruments = (props) => {
   const toggleUsers = (props) => {
     setModalUsers(!modalUsers);
     if (props === "cancel") {
+      setNewUsers([]);
       setLoading(false);
       setError(false);
       return null;
@@ -259,6 +260,7 @@ const Instruments = (props) => {
       sleep(2000).then(() => {
         setError(true);
         setLoading(false);
+        setNewUsers([]);
         setModalUsers(!modalUsers);
       });
     }
@@ -478,7 +480,7 @@ const Instruments = (props) => {
                   <CreateableSelect
                     id='userAssign'
                     name='userAssign'
-                    placeholder='New Users'
+                    placeholder='New User Emails'
                     isMulti
                     value={newUsers}
                     onChange={function (e) {

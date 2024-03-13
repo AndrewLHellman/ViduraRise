@@ -11,6 +11,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import RbAlert from 'react-bootstrap/Alert';
 import { verifyToken } from '../Common/AuthToken';
 import Select from 'react-select';
+import CreateableSelect from "react-select/creatable";
 
 function LinkCell(text) {
   return (
@@ -27,7 +28,8 @@ const Projects = (props) => {
 
   const { className } = props;
 
-  const [modal, setModal] = useState(false);
+  const [modalAction, setModalAction] = useState(false);
+  const [modalUsers, setModalUsers] = useState(false);
   const [backdrop, setBackdrop] = useState(true);
   const [keyboard, setKeyboard] = useState(true);
   const [loading, setLoading] = useState();
@@ -49,6 +51,7 @@ const Projects = (props) => {
   const [imageAnalyzed, setImageAnalyzed] = useState("");
   const [storageAssign, setStorageAssign] = useState("");
   const [description, setDescription] = useState("");
+  const [newUsers, setNewUsers] = useState([]);
 
   const [status, setStatus] = useState();
   const storedToken = localStorage.getItem('auth_token');
@@ -65,6 +68,11 @@ const Projects = (props) => {
   const instrumentSchema = Yup.object({
     label: Yup.string().required(),
     value: Yup.string().required()
+  });
+
+  const userSchema = Yup.object({
+    label: Yup.string().email().required(),
+    value: Yup.string().email().required()
   });
 
   useEffect(() => {
@@ -163,7 +171,7 @@ const Projects = (props) => {
   const toggle = (props, update = false) => {
     debugger
     setUpdate(update);
-    setModal(!modal);
+    setModalAction(!modalAction);
     if (props === "cancel") {
       setLoading(false);
       setError(false);
@@ -191,6 +199,50 @@ const Projects = (props) => {
     getStorages();
     getInstruments();
   };
+
+  const toggleUsers = (props) => {
+    setModalUsers(!modalUsers);
+    if (props === "cancel") {
+      setNewUsers([]);
+      setLoading(false);
+      setError(false);
+      return null;
+    }
+    const data = props._cells;
+    setUniqueId(data ? data[0].data : "");
+  }
+
+  const addUsers = async ({ uniqueId, newUsers }) => {
+    let config = {
+      method: 'post',
+      url: 'http://localhost:3200/addProjectUsers',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: {
+        uniqueId,
+        newUsers: newUsers.map((user) => ({"user_email": user.value}))
+      }
+    };
+    await axios.request(config)
+      .then(async (response) => {
+        const { status, msgType, msg, data } = response.data;
+        switch (status) {
+          case 1:
+            setSuccess(msgType)
+            break;
+          case 2:
+            setErrorMsg(msg)
+            break;
+
+          default:
+            break;
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
 
   const columns = [
     {
@@ -241,6 +293,20 @@ const Projects = (props) => {
               </>
             )}
           </div>
+        )
+      }
+    },
+    {
+      name: "Add User",
+      formatter: (cell, row) => {
+        return _(
+          <>
+            <Button className='pt-1 px-2' color="info" size="sm" outline onClick={() => toggleUsers(row)}>
+              <svg className='d-flex pe-none' xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6m3-3h-6"/>
+              </svg>
+            </Button>
+          </>
         )
       }
     },
@@ -356,9 +422,32 @@ const Projects = (props) => {
       sleep(2000).then(() => {
         setError(true);
         setLoading(false);
-        setModal(!modal);
+        setModalAction(!modalAction);
         setSuccess("");
         setErrorMsg("")
+      });
+    }
+  });
+
+  const userValidation = useFormik({
+    enableReinitialize: true,
+    initialValues: {
+      uniqueId: uniqueId,
+      newUsers
+    },
+    validationSchema: Yup.object({
+      uniqueId: Yup.string().required("Unique Id is missing."),
+      newUsers: Yup.array().of(userSchema).required("No new users are added")
+    }),
+    onSubmit: async (values) => {
+      debugger;
+      setLoading(true);
+      await addUsers(values);
+      sleep(2000).then(() => {
+        setError(true);
+        setLoading(false);
+        setNewUsers([]);
+        setModalUsers(!modalUsers);
       });
     }
   });
@@ -401,6 +490,7 @@ const Projects = (props) => {
               project.imageAnalyzed,
               project.storageAssign,
               project.usersAssigned,
+              project.usersAssigned,
               project.description
             ]),
             handle: (res) => {
@@ -423,7 +513,7 @@ const Projects = (props) => {
         </Button>
       </>
       <Modal
-        isOpen={modal}
+        isOpen={modalAction}
         toggle={toggle}
         className={className}
         backdrop={backdrop}
@@ -629,6 +719,57 @@ const Projects = (props) => {
               </div>
               <div className='col-auto'>
                 <Button color="secondary" onClick={() => toggle("cancel")}>
+                  Cancel
+                </Button>
+              </div>
+            </Row>
+          </Form>
+        </ModalBody>
+      </Modal>
+      <Modal
+        isOpen={modalUsers}
+        toggle={toggleUsers}
+        className={className}
+        backdrop={backdrop}
+        centered={true}
+        keyboard={keyboard}
+      >
+        <ModalHeader toggle={() => toggleUsers("cancel")}>Add User</ModalHeader>
+        <ModalBody className='pt-4'>
+          <Form
+            onSubmit={(e) => {
+              e.preventDefault();
+              userValidation.handleSubmit();
+              return false;
+            }}>
+            <Row>
+              <div className='mb-3'>
+                <FormGroup floating>
+                  <CreateableSelect
+                    id='userAssign'
+                    name='userAssign'
+                    placeholder='New User Emails'
+                    isMulti
+                    value={newUsers}
+                    onChange={function (e) {
+                      setNewUsers(e);
+                      console.log(e);
+                    }}
+                  ></CreateableSelect>
+                </FormGroup>
+              </div>
+            </Row>
+            <Row className="mt-4">
+              <div className='col-auto ms-auto'>
+                <Button color="success"
+                  disabled={error ? null : loading ? true : false}
+                  className="btn btn-success fw-bold" type="submit">
+                  {error ? null : loading ? <Spinner size="sm" className='me-2'> Loading... </Spinner> : null}
+                  {"Add"}
+                </Button>
+              </div>
+              <div className='col-auto'>
+                <Button color="secondary" onClick={() => toggleUsers("cancel")}>
                   Cancel
                 </Button>
               </div>

@@ -4,6 +4,7 @@ const { getAllProjectimages } = require('../controller/projects/insideProject')
 const { deleteImage } = require('../controller/projects/deleteImage') 
 const { updateProject }  = require('../controller/projects/updateProject')
 const { addProject } = require('../controller/projects/addProject')
+const { addProjectUsers } =  require('../controller/projects/addProjectUsers')
 
 const router = require("express").Router();
 
@@ -15,5 +16,6 @@ router.post('/getAllImages', getAllProjectimages);
 router.post('/deleteImage', deleteImage)
 router.post('/updateProject', updateProject)
 router.post('/addProject', addProject)
+router.post('/addProjectUsers', addProjectUsers)
 
 module.exports = router;

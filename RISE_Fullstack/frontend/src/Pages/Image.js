@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import axios from 'axios';
 import { Button, Card, CardBody, Col, Row, Table } from 'reactstrap';
 import { ToastContainer, toast } from 'react-toastify';
-import ChatBotComponent from './ChatBot';
+import ChatBotComponent, { ViduraChatbot } from './ChatBot';
 
 const BotTable = ({ data }) => {
     return (
@@ -88,7 +88,7 @@ const Image = () => {
             filename: image_req_data[1],
             uniqueId: image_req_data[2]
         }
-        
+
         let config = {
             method: 'post',
             url: 'http://localhost:3200/analyzeImage',
@@ -367,6 +367,134 @@ const Image = () => {
                         </div> : ''
                 }
             </div>
+
+            {/* VIDURA Research Assistant powered by ARES.py */}
+            <ViduraChatbot />
+
+            {/* Add CSS for VIDURA Chatbot */}
+            <style>
+            {`
+                .vidura-chatbot-container {
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    z-index: 999;
+                }
+
+                .vidura-chatbot {
+                    width: 600px;
+                    height: 900px;
+                    border-radius: 10px;
+                    overflow: hidden;
+                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+                }
+
+                .chatbot-header {
+                    background-color: #376B7E;
+                    padding: 5px 10px;
+                    text-align: right;
+                }
+
+                .close-btn {
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 16px;
+                    cursor: pointer;
+                }
+
+                .chatbot-toggle {
+                    background-color: #376B7E;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    padding: 10px 15px;
+                    cursor: pointer;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+                }
+
+                .react-chatbot-kit-chat-container {
+                    width: 100%;
+                    height: calc(900px - 37px);
+                }
+
+                .react-chatbot-kit-chat-message-container {
+                    height: calc(900px - 140px);
+                }
+
+                .react-chatbot-kit-chat-bot-message {
+                    width: 450px;
+                }
+
+                .error-message {
+                    color: #d9534f;
+                    padding: 10px;
+                    border-radius: 5px;
+                    background-color: rgba(217, 83, 79, 0.1);
+                    border-left: 3px solid #d9534f;
+                    margin: 10px 0;
+                }
+
+                .thinking-widget {
+                    padding: 5px 0;
+                }
+
+                .dot-pulse {
+                    position: relative;
+                    left: -9999px;
+                    width: 6px;
+                    height: 6px;
+                    border-radius: 5px;
+                    background-color: #fff;
+                    color: #fff;
+                    box-shadow: 9999px 0 0 -5px;
+                    animation: dot-pulse 1.5s infinite linear;
+                    animation-delay: 0.25s;
+                }
+
+                .dot-pulse::before, .dot-pulse::after {
+                    content: "";
+                    display: inline-block;
+                    position: absolute;
+                    top: 0;
+                    width: 6px;
+                    height: 6px;
+                    border-radius: 5px;
+                    background-color: #fff;
+                    color: #fff;
+                }
+
+                .dot-pulse::before {
+                    box-shadow: 9984px 0 0 -5px;
+                    animation: dot-pulse-before 1.5s infinite linear;
+                    animation-delay: 0s;
+                }
+
+                .dot-pulse::after {
+                    box-shadow: 10014px 0 0 -5px;
+                    animation: dot-pulse-after 1.5s infinite linear;
+                    animation-delay: 0.5s;
+                }
+
+                @keyframes dot-pulse-before {
+                    0% { box-shadow: 9984px 0 0 -5px; }
+                    30% { box-shadow: 9984px 0 0 2px; }
+                    60%, 100% { box-shadow: 9984px 0 0 -5px; }
+                }
+
+                @keyframes dot-pulse {
+                    0% { box-shadow: 9999px 0 0 -5px; }
+                    30% { box-shadow: 9999px 0 0 2px; }
+                    60%, 100% { box-shadow: 9999px 0 0 -5px; }
+                }
+
+                @keyframes dot-pulse-after {
+                    0% { box-shadow: 10014px 0 0 -5px; }
+                    30% { box-shadow: 10014px 0 0 2px; }
+                    60%, 100% { box-shadow: 10014px 0 0 -5px; }
+                }
+            `}
+            </style>
         </div>
     )
 }

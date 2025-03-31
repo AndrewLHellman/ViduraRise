@@ -6,6 +6,7 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import ChatBotComponent from './ChatBot';
 import { ToastContainer, toast } from 'react-toastify';
+import API from '../Common/ApiConfig';
 
 
 const BotTable = ({ data }) => {
@@ -108,7 +109,7 @@ const ScanImage = () => {
 
         let config = {
             method: 'post',
-            url: 'http://localhost:3200/analyzeImage',
+            url: API.IMAGES.ANALYZE,
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -225,7 +226,7 @@ const ScanImage = () => {
                                     let config = {
                                         method: 'post',
                                         maxBodyLength: Infinity,
-                                        url: 'http://localhost:3200/semScan',
+                                        url: API.IMAGES.INSTRUMENT_SCAN,
                                         headers: {
                                             'Content-Type': 'application/json',
                                         },
@@ -311,7 +312,7 @@ const ScanImage = () => {
 
         let config = {
             method: 'post',
-            url: 'http://localhost:3200/showImage',
+            url: API.IMAGES.SHOW,
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -343,7 +344,7 @@ const ScanImage = () => {
         }
         let config = {
             method: 'post',
-            url: `http://localhost:3200/${button === "SEM-SCAN" ? 'semScan' : 'upload'}`,
+            url: button === "SEM-SCAN" ? API.IMAGES.INSTRUMENT_SCAN : API.IMAGES.UPLOAD,
             headers: {
                 'Content-Type': button === "SEM-SCAN" ? 'application/json' : 'multipart/form-data'
 
@@ -406,7 +407,7 @@ const ScanImage = () => {
     useEffect(() => {
         let config = {
             method: 'post',
-            url: 'http://localhost:3200/scanButton',
+            url: API.IMAGES.SCAN,
             headers: {
                 'Content-Type': 'application/json',
             },

@@ -7,6 +7,7 @@ import { useFormik } from 'formik';
 import axios from 'axios';
 import { verifyToken } from '../Common/AuthToken';
 import CreateableSelect from "react-select/creatable";
+import API from '../Common/ApiConfig';
 
 
 const sleep = ms =>
@@ -27,7 +28,7 @@ const Storage = (props) => {
 
   const [bucketName, setBucketName] = useState("");
   const [type, setType] = useState("");
-  const [usage, setUsage] = useState(""); 
+  const [usage, setUsage] = useState("");
   const [imageCount, setImageCount] = useState("");
 
   const [status, setStatus] = useState();
@@ -71,7 +72,7 @@ const Storage = (props) => {
   const addUsers = async ({ bucketName, newUsers }) => {
     let config = {
       method: 'post',
-      url: 'http://localhost:3200/addStorageUsers',
+      url: API.STORAGE.ADD_USERS,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -160,7 +161,7 @@ const Storage = (props) => {
   const fetchData = async ({ bucketName, type }) => {
     let config = {
       method: 'post',
-      url: 'http://localhost:3200/addStorage',
+      url: API.STORAGE.ADD,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -246,7 +247,7 @@ const Storage = (props) => {
           // data={[]}
           columns={columns}
           server={{
-            url: 'http://localhost:3200/getStorage',
+            url: API.STORAGE.GET_ALL,
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

@@ -1,0 +1,32 @@
+name: nlp-environment
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.10.13
+  - pip
+  - pip:
+    - pypdf
+    - transformers
+    - einops
+    - langchain
+    - bitsandbytes
+    - sentence-transformers
+    - llama-index-llms-huggingface
+    - langchain-community
+    - llama-index-embeddings-langchain
+    - rouge-score
+    - evaluate
+    - datasets
+    - bert-score
+    - sacrebleu
+    - flask
+    - flask-cors
+    - llama-index-readers-file
+    - python-dotenv
+    - torch
+    - accelerate
+    - huggingface-hub
+    - tenacity
+    - llama-index-core
+    - llama-index

@@ -10,6 +10,7 @@ import { ToastContainer, toast } from 'react-toastify'
 import RbAlert from 'react-bootstrap/Alert';
 import { verifyToken } from '../Common/AuthToken';
 import CreateableSelect from "react-select/creatable";
+import API from '../Common/ApiConfig'
 
 const sleep = ms =>
   new Promise(resolve => setTimeout(resolve, ms));
@@ -161,7 +162,7 @@ const Instruments = (props) => {
   const fetchData = async ({ _id, name, description }) => {
     let config = {
       method: 'post',
-      url: 'http://localhost:3200/updateInstruments',
+      url: API.INSTRUMENTS.UPDATE,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -190,7 +191,7 @@ const Instruments = (props) => {
   const addUsers = async ({ _id, newUsers }) => {
     let config = {
       method: 'post',
-      url: 'http://localhost:3200/addInstrumentUsers',
+      url: API.INSTRUMENTS.ADD_USERS,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -291,7 +292,7 @@ const Instruments = (props) => {
           // data={[]}
           columns={columns}
           server={{
-            url: 'http://localhost:3200/getinstruments',
+            url: API.INSTRUMENTS.GET_ALL,
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

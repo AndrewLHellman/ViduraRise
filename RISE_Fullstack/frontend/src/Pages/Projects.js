@@ -12,6 +12,7 @@ import RbAlert from 'react-bootstrap/Alert';
 import { verifyToken } from '../Common/AuthToken';
 import Select from 'react-select';
 import CreateableSelect from "react-select/creatable";
+import API from '../Common/ApiConfig';
 
 function LinkCell(text) {
   return (
@@ -94,7 +95,7 @@ const Projects = (props) => {
   const getStorages = async () => {
     let config = {
       method: 'post',
-      url: 'http://localhost:3200/getStorage',
+      url: API.STORAGE.GET_ALL,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -132,7 +133,7 @@ const Projects = (props) => {
   const getInstruments = async () => {
     let config = {
       method: 'post',
-      url: 'http://localhost:3200/getinstruments',
+      url: API.INSTRUMENTS.GET_ALL,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -215,7 +216,7 @@ const Projects = (props) => {
   const addUsers = async ({ uniqueId, newUsers }) => {
     let config = {
       method: 'post',
-      url: 'http://localhost:3200/addProjectUsers',
+      url: API.PROJECTS.ADD_USERS,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -347,7 +348,7 @@ const Projects = (props) => {
   }) => {
     let config = {
       method: 'post',
-      url: update ? 'http://localhost:3200/updateProject' : 'http://localhost:3200/addProject',
+      url: update ? API.PROJECTS.UPDATE : API.PROJECTS.CREATE,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -476,7 +477,7 @@ const Projects = (props) => {
         <Grid
           columns={columns}
           server={{
-            url: 'http://localhost:3200/allProjects',
+            url: API.PROJECTS.GET_ALL,
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

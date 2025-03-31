@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Button, Card, CardBody, Col, Row, Table } from 'reactstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import ChatBotComponent, { ViduraChatbot } from './ChatBot';
+import API from '../Common/ApiConfig';
 
 const BotTable = ({ data }) => {
     return (
@@ -91,7 +92,7 @@ const Image = () => {
 
         let config = {
             method: 'post',
-            url: 'http://localhost:3200/analyzeImage',
+            url: API.IMAGES.ANALYZE,
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -208,7 +209,7 @@ const Image = () => {
                                     let config = {
                                         method: 'post',
                                         maxBodyLength: Infinity,
-                                        url: 'http://localhost:3200/semScan',
+                                        url: API.IMAGES.INSTRUMENT_SCAN,
                                         headers: {
                                             'Content-Type': 'application/json',
                                         },
@@ -301,7 +302,7 @@ const Image = () => {
 
         let config = {
             method: 'post',
-            url: 'http://localhost:3200/showImage',
+            url: API.IMAGES.SHOW,
             headers: {
                 'Content-Type': 'application/json',
             },

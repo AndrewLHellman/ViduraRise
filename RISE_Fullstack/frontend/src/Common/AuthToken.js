@@ -1,9 +1,10 @@
 import axios from 'axios'
+import API from './ApiConfig'
 
 const generateToken = async (user) => {
     let config = {
         method: 'post',
-        url: 'http://localhost:3200/token',
+        url: API.AUTH.TOKEN,
         headers: {
             'Content-Type': 'application/json',
         },
@@ -18,7 +19,7 @@ const generateToken = async (user) => {
 const verifyToken = async (user) => {
     let config = {
         method: 'post',
-        url: 'http://localhost:3200/verify-token',
+        url: API.AUTH.VERIFY_TOKEN,
         headers: {
             'Content-Type': 'application/json',
         },

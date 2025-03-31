@@ -4,6 +4,7 @@ import { Grid, _ } from 'gridjs-react';
 import axios from 'axios';
 import { Button, Col, Row } from 'reactstrap';
 import { ToastContainer, toast } from 'react-toastify';
+import API from '../Common/ApiConfig';
 
 
 const Project = () => {
@@ -32,7 +33,7 @@ const Project = () => {
 
         let config = {
             method: 'post',
-            url: 'http://localhost:3200/deleteImage',
+            url: API.PROJECTS.DELETE_IMAGE,
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -97,7 +98,7 @@ const Project = () => {
 
         let config = {
             method: 'post',
-            url: 'http://localhost:3200/getAllImages',
+            url: API.PROJECTS.GET_IMAGES,
             headers: {
                 'Content-Type': 'application/json',
             },

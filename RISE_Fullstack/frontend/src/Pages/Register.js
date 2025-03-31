@@ -18,8 +18,9 @@ import { ToastContainer, toast } from 'react-toastify';
 // import { useSelector, useDispatch } from "react-redux";
 
 import { Link, useNavigate } from "react-router-dom";
+import API from "../Common/ApiConfig";
 
-//import images 
+//import images
 
 const sleep = ms =>
     new Promise(resolve => setTimeout(resolve, ms));
@@ -52,7 +53,7 @@ const Register = () => {
         console.log(req_data);
         let config = {
             method: 'post',
-            url: 'http://localhost:3200/register',
+            url: API.AUTH.REGISTER,
             headers: {
                 'Content-Type': 'application/json',
             },

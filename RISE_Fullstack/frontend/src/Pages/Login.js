@@ -22,6 +22,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import withRouter from '../Common/withRouter';
 import { generateToken } from '../Common/AuthToken';
 
+import API from '../Common/ApiConfig';
+
 const sleep = ms =>
     new Promise(resolve => setTimeout(resolve, ms));
 
@@ -40,7 +42,7 @@ const Login = (props) => {
     const fetchData = async ({ email, password }) => {
         let config = {
             method: 'post',
-            url: 'http://localhost:3200/login',
+            url: API.AUTH.LOGIN,
             headers: {
                 'Content-Type': 'application/json',
             },

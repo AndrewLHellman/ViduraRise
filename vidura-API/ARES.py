@@ -72,7 +72,7 @@ class ModelLoader:
     def initialize_llm(self, model, tokenizer):
         # Get repetition_penalty from env or use default
         repetition_penalty = float(os.getenv("REPETITION_PENALTY", "1.2"))
-        
+
         return HuggingFaceLLM(
             context_window=2048,
             max_new_tokens=self.max_tokens,
@@ -224,7 +224,7 @@ class AgenticRAG:
             unique_points.append(line)
 
         return self.trim_to_last_sentence('\n'.join(unique_points))
-        
+
     def detect_and_fix_repetition(self, text):
         """
         Detects and fixes repetitive text patterns in model output.
@@ -232,29 +232,29 @@ class AgenticRAG:
         """
         # First clean any trailing incomplete sentences
         text = self.trim_to_last_sentence(text)
-        
+
         # 1. Check for exact repeating patterns at the end of the text
         for pattern_length in range(5, 50):  # Check for repeating patterns of 5 to 50 characters
             # Don't process if text is shorter than twice the pattern length
             if len(text) < pattern_length * 2:
                 continue
-                
+
             # Check the end of the text for repeating patterns
             pattern = text[-pattern_length:]
             repetition_count = 0
-            
+
             # Look for the pattern repeating backwards from the end
             for i in range(2, 10):  # Check for up to 10 repetitions
                 check_pos = len(text) - (pattern_length * i)
                 if check_pos < 0:
                     break
-                    
+
                 check_pattern = text[check_pos:check_pos + pattern_length]
                 if check_pattern == pattern:
                     repetition_count += 1
                 else:
                     break
-            
+
             # If we found repetition, truncate the text
             if repetition_count > 0:
                 # Cut out all but the first occurrence of the pattern
@@ -263,24 +263,24 @@ class AgenticRAG:
                 # Make sure we still end with a complete sentence
                 text = self.trim_to_last_sentence(text)
                 break
-        
+
         # 2. Check for conceptually repeating paragraphs
         paragraphs = text.split('\n\n')
         if len(paragraphs) > 1:
             # Keep only unique paragraphs, but with a more sophisticated approach
             filtered_paragraphs = []
             seen_content = set()
-            
+
             for para in paragraphs:
                 para = para.strip()
                 if not para:
                     continue
-                
+
                 # Create a simplified fingerprint of the paragraph
                 # by removing common words and keeping only the first 5 words of each sentence
                 sentences = para.split('.')
                 fingerprint = []
-                
+
                 for sentence in sentences:
                     if not sentence.strip():
                         continue
@@ -288,52 +288,52 @@ class AgenticRAG:
                     words = [w.lower() for w in sentence.split() if len(w) > 3]
                     if words:
                         fingerprint.append(' '.join(words[:5]))
-                
+
                 # If we have a meaningful fingerprint that we haven't seen before, keep the paragraph
                 if fingerprint and tuple(fingerprint) not in seen_content:
                     seen_content.add(tuple(fingerprint))
                     filtered_paragraphs.append(para)
-            
+
             # Reassemble the text with only unique paragraphs
             if filtered_paragraphs:
                 text = '\n\n'.join(filtered_paragraphs)
-        
+
         # 3. Check for circular repeating content (where the end starts repeating the beginning)
         if len(text) > 200:
             # Check if the last 100-200 chars repeat any part of the first half
             for end_length in [100, 150, 200]:
                 if len(text) < end_length * 2:
                     continue
-                    
+
                 end_text = text[-end_length:]
                 # Look for this text in the first half of the document
                 search_area = text[:len(text)//2]
-                
+
                 if end_text in search_area:
                     # Found a circular repetition, truncate at this point
                     end_pos = search_area.find(end_text) + end_length
                     text = text[:end_pos]
                     text = self.trim_to_last_sentence(text)
                     break
-                
+
         # 4. Check for repeating sentences
         sentences = text.split('.')
         if len(sentences) > 3:
             unique_sentences = []
             seen_sentences = set()
-            
+
             for sentence in sentences:
                 clean_sentence = sentence.strip().lower()
                 # Only consider substantive sentences
                 if len(clean_sentence) > 10 and clean_sentence not in seen_sentences:
                     seen_sentences.add(clean_sentence)
                     unique_sentences.append(sentence)
-            
+
             # Reassemble with only unique sentences
             text = '.'.join(unique_sentences)
             if not text.endswith('.'):
                 text += '.'
-        
+
         return text
 
     def process_query(self, initial_query):
@@ -346,7 +346,7 @@ class AgenticRAG:
 
         # Generate the answer
         final_answer = self.generate_final_answer(cleaned_results, initial_query)
-        
+
         # Apply the repetition detection and fix
         cleaned_answer = self.detect_and_fix_repetition(final_answer)
         print(f"Final Answer: {cleaned_answer}")
@@ -371,32 +371,32 @@ def process_query():
             return jsonify({"error": "Missing 'user_query' in request body"}), 400
 
         user_query = data['user_query']
-        
+
         # Log the incoming query for debugging (exclude in production)
         print(f"Processing query: {user_query}")
-        
+
         # Add timing information for performance tracking
         import time
         start_time = time.time()
-        
+
         # Process the query using AgenticRAG
         response = agentic_rag.process_query(user_query)
-        
+
         # Measure processing time
         processing_time = time.time() - start_time
         print(f"Query processed in {processing_time:.2f} seconds")
-        
+
         # Log response length for monitoring
         response_length = len(response)
         print(f"Response length: {response_length} characters")
-        
+
         # Check for response quality issues
         if response_length < 20:
             print("WARNING: Very short response detected")
-        
+
         # Return the response with metadata
         return jsonify({
-            "query": user_query, 
+            "query": user_query,
             "response": response,
             "metadata": {
                 "processing_time_seconds": round(processing_time, 2),
@@ -409,7 +409,7 @@ def process_query():
         import traceback
         error_detail = traceback.format_exc()
         print(f"Error processing query: {str(e)}\n{error_detail}")
-        
+
         # Return a more user-friendly error
         return jsonify({
             "error": "An error occurred while processing your query",
@@ -417,6 +417,10 @@ def process_query():
         }), 500
 
 if __name__ == '__main__':
-
+    # Get environment variables with defaults
+    host = os.getenv("FLASK_HOST", "0.0.0.0")
+    port = int(os.getenv("FLASK_PORT_VIDURA", "5000"))
+    debug = os.getenv("FLASK_DEBUG", "False") == "True"
+    
     # Start Flask app
-    app.run(host=os.getenv("FLASK_HOST"), port=int(os.getenv("FLASK_PORT")), debug=(os.getenv("FLASK_DEBUG") == "True"))
+    app.run(host=host, port=port, debug=debug)

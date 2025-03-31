@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ChatBot from 'react-simple-chatbot';
 import { Chatbot as ResearchChatbot } from 'react-chatbot-kit';
 import 'react-chatbot-kit/build/main.css';
+import './chat_bot/ChatBot.css';
 
 // Import components for the research chatbot
 import config from './chat_bot/config';

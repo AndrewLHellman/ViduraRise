@@ -1,0 +1,56 @@
+/* Chatbot message styling to properly display newlines */
+.react-chatbot-kit-chat-bot-message {
+  white-space: pre-line !important;
+}
+
+.react-chatbot-kit-user-chat-message {
+  white-space: pre-line !important;
+}
+
+/* Additional styling for better readability */
+.react-chatbot-kit-chat-bot-message-container {
+  margin-bottom: 15px;
+}
+
+/* Make sure the chat message container allows for proper text wrapping */
+.react-chatbot-kit-chat-bot-message {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* Table styling for consistent column widths */
+.react-chatbot-kit-chat-bot-message table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.react-chatbot-kit-chat-bot-message th,
+.react-chatbot-kit-chat-bot-message td {
+  padding: 4px;
+  text-align: left;
+  white-space: normal;
+  border: 1px solid #ccc;
+}
+
+/* Set fixed width for each column */
+.react-chatbot-kit-chat-bot-message th:nth-child(1),
+.react-chatbot-kit-chat-bot-message td:nth-child(1) {
+  width: 15%;
+}
+
+.react-chatbot-kit-chat-bot-message th:nth-child(2),
+.react-chatbot-kit-chat-bot-message td:nth-child(2) {
+  width: 25%;
+}
+
+.react-chatbot-kit-chat-bot-message th:nth-child(3),
+.react-chatbot-kit-chat-bot-message td:nth-child(3) {
+  width: 25%;
+}
+
+.react-chatbot-kit-chat-bot-message th:nth-child(4),
+.react-chatbot-kit-chat-bot-message td:nth-child(4) {
+  width: 35%;
+}

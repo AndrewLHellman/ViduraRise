@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Card, CardBody } from 'reactstrap'
 import * as echarts from 'echarts';
 import axios from 'axios';
+import API from '../Common/ApiConfig';
 
 const Daskboard = () => {
   const chartRef = useRef(null);
@@ -80,13 +81,13 @@ const Daskboard = () => {
     window.addEventListener('resize', myChart.resize);
 
   }
-  
+
   useEffect(() => {
     // Initialize and render the chart inside the useEffect hook
 
     let config = {
       method: 'get',
-      url: 'http://localhost:3200/dashboard',
+      url: API.DASHBOARD,
       headers: {}
     };
 

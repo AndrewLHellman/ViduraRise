@@ -24,6 +24,8 @@ from transformers import BitsAndBytesConfig
 
 from accelerate import infer_auto_device_map
 
+import time
+
 load_dotenv()
 
 os.environ['PYTORCH_CUDA_ALLOC_CONF'] = os.getenv('PYTORCH_CUDA_ALLOC_CONF', '0')
@@ -53,7 +55,14 @@ class ModelLoader:
             "cpu": os.getenv('CPU_MEMORY')  # Increased CPU memory
         }
 
-        tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        tokenizer = AutoTokenizer.from_pretrained(
+            self.model_name,
+            use_fast=True,
+            model_max_length=2048,
+            padding_side="right",
+            add_eos_token=True,
+            add_bos_token=True
+        )
 
         # Set more conservative compute settings
         model = AutoModelForCausalLM.from_pretrained(
@@ -63,9 +72,11 @@ class ModelLoader:
             torch_dtype=torch.float16,
             quantization_config=self.quantization_config,
             max_memory=max_memory,
-            offload_folder="offload_folder",
+            offload_folder=os.getenv('OFFLOAD_FOLDER', '/tmp/llama_offload'),
             offload_state_dict=True  # Enable state dict offloading
         )
+
+        model.config.use_cache = True
 
         return model, tokenizer
 
@@ -74,7 +85,7 @@ class ModelLoader:
         repetition_penalty = float(os.getenv("REPETITION_PENALTY", "1.2"))
 
         return HuggingFaceLLM(
-            context_window=2048,
+            context_window=1024,
             max_new_tokens=self.max_tokens,
             model=model,
             tokenizer=tokenizer,
@@ -84,6 +95,7 @@ class ModelLoader:
                 "top_k": self.top_k,
                 "top_p": self.top_p,
                 "repetition_penalty": repetition_penalty,  # Add repetition penalty
+                "use_cache": True,
                 "no_repeat_ngram_size": 3,  # Prevent repeating 3-grams
             },
             device_map="auto",
@@ -116,16 +128,16 @@ data_loader = DataLoader(os.getenv('DATA_DIRECTORY'))
 documents = data_loader.load_documents()
 
 # Model initialization
-model_name = os.getenv('MODEL_NAME') # Only 1.1B parameters
+model_name = os.getenv('MODEL_NAME')
 
 #quantizing the model
 quant_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_use_double_quant=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_compute_dtype=torch.float16,
+    load_in_8bit=True,
     llm_int8_threshold=6.0,
-    llm_int8_has_fp16_weight=True
+    llm_int8_has_fp16_weight=False,
+    bnb_4bit_compute_dtype=torch.float16,
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_quant_type="nf4"
 )
 
 # Before loading the model
@@ -173,10 +185,9 @@ class AgenticRAG:
 
     def reformulate_query(self, query):
         prompt = PromptTemplate(
-            "Given the user query: '{query}'\n"
-            "Reformulate it into a more precise and searchable query. "
-            "Keep the reformulated query concise and relevant to the original question. "
-            "Reformulated query: "
+            "CONTEXT:\n{context}\n\n"
+            "QUESTION: {original_query}\n\n"
+            "ANSWER:"
         )
         response = llm.complete(prompt.format(query=query))
         return self.trim_to_last_sentence(response.text.strip())
@@ -197,18 +208,21 @@ class AgenticRAG:
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def generate_final_answer(self, context, original_query):
         prompt = PromptTemplate(
-            "<|system|>You are a helpful assistant providing accurate information about scientific topics. "
+            "<s>[INST] <<SYS>>\n"
+            "You are a helpful assistant providing accurate information about scientific topics. "
             "Provide clear, well-structured answers based on the given context. "
             "Your answers should be comprehensive but avoid unnecessary repetition. "
-            "Structure your response with clear paragraphs, and ensure that you provide a complete answer "
-            "that ends naturally without trailing off.<|endoftext|>\n"
-            "<|user|>Based on this information:\n{context}\n\n"
-            "Please explain: {original_query}<|assistant|>"
+            "Structure your response with clear paragraphs.\n"
+            "<</SYS>>\n\n"
+            "Based on this information:\n{context}\n\n"
+            "Please explain: {original_query} [/INST] "
         )
         response = llm.complete(prompt.format(
             context=context,
             original_query=original_query
         ))
+        print(f"DEBUG - Full prompt sent to model: {prompt.format(context=context[:100]+'...', original_query=original_query)}")
+        print(f"DEBUG - Raw response from model: '{response.text}'")
         return self.trim_to_last_sentence(response.text.strip())
 
     def clean_results(self, results):
@@ -362,6 +376,9 @@ print("AgenticRAG initialized successfully!")
 @app.route('/process_query', methods=['POST'])
 def process_query():
     try:
+
+        start_time = time.time()
+
         if agentic_rag is None:
             return jsonify({"error": "API setup incomplete. Please try again later."}), 503
 
@@ -371,20 +388,21 @@ def process_query():
             return jsonify({"error": "Missing 'user_query' in request body"}), 400
 
         user_query = data['user_query']
+        query_time = time.time() - start_time
+        print(f"Query parsing time: {query_time:.2f}s")
 
         # Log the incoming query for debugging (exclude in production)
         print(f"Processing query: {user_query}")
 
-        # Add timing information for performance tracking
-        import time
-        start_time = time.time()
 
         # Process the query using AgenticRAG
+        process_start = time.time()
         response = agentic_rag.process_query(user_query)
+        process_time = time.time() - process_start
+        print(f"Processing time: {process_time:.2f}s")
 
         # Measure processing time
-        processing_time = time.time() - start_time
-        print(f"Query processed in {processing_time:.2f} seconds")
+        total_time = time.time() - start_time
 
         # Log response length for monitoring
         response_length = len(response)
@@ -399,8 +417,9 @@ def process_query():
             "query": user_query,
             "response": response,
             "metadata": {
-                "processing_time_seconds": round(processing_time, 2),
-                "response_length": response_length
+                "total_time_seconds": round(total_time, 2),
+                "processing_time_seconds": round(process_time, 2),
+                "response_length": len(response)
             }
         })
 
@@ -421,6 +440,6 @@ if __name__ == '__main__':
     host = os.getenv("FLASK_HOST", "0.0.0.0")
     port = int(os.getenv("FLASK_PORT_VIDURA", "5000"))
     debug = os.getenv("FLASK_DEBUG", "False") == "True"
-    
+
     # Start Flask app
     app.run(host=host, port=port, debug=debug)
